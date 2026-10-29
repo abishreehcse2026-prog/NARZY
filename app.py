@@ -152,28 +152,28 @@ if uploaded_file is not None:
                       )
                   })
                 
-                  st.subheader("Why Is This Record Flagged?")
+                st.subheader("Why Is This Record Flagged?")
 
-                  selected_record = st.selectbox(
+                selected_record = st.selectbox(
                       "Choose a record to investigate",
                       risk_table["Record ID"].tolist()
                   )
 
-                  selected_index = int(selected_record)
+                selected_index = int(selected_record)
                   selected_features = X.loc[selected_index]
 
-                  feature_importance = pd.Series(
+                feature_importance = pd.Series(
                       model.named_steps["forest"].feature_importances_,
                       index=X.columns
                   ).sort_values(ascending=False)
 
-                  st.write(
+                st.write(
                       "The following are the model's most important "
                       "features for this dataset. They are not proof "
                       "of the reason for an individual prediction."
                   )
 
-                  explanation = pd.DataFrame({
+                explanation = pd.DataFrame({
                       "Feature": feature_importance.head(3).index,
                       "Record Value": [
                           selected_features.get(feature, np.nan)
@@ -185,7 +185,7 @@ if uploaded_file is not None:
                       ]
                   })
 
-                  st.dataframe(
+                st.dataframe(
                       explanation,
                       use_container_width=True,
                       hide_index=True
