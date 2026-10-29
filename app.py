@@ -12,7 +12,7 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    confusion_matrix
+    confusion_matrix,
     roc_auc_score
 
 )
