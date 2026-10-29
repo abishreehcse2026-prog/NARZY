@@ -142,7 +142,7 @@ if uploaded_file is not None:
 
                 risk_scores = model.predict_proba(X_test)[:, 1]
 
-                 risk_table = pd.DataFrame({
+                risk_table = pd.DataFrame({
                       "Record ID": X_test.index.astype(str),
                       "Bankruptcy Risk (%)": (risk_scores * 100).round(2),
                       "Risk Status": np.where(
