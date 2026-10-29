@@ -1,75 +1,64 @@
 
 import streamlit as st
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, recall_score
 
-st.set_page_config(page_title="NARZY", layout="wide")
-
-st.title("NARZY")
-st.subheader("AI-Powered Corporate Risk Early-Warning System")
-
-st.warning(
-    "Prototype demonstration. Synthetic data is not real company data "
-    "and must not be used for financial decisions."
+st.set_page_config(
+    page_title="NARZY | Financial Risk Analytics",
+    page_icon="📊",
+    layout="wide"
 )
 
-st.header("Upload Financial Dataset")
-file = st.file_uploader("Upload a CSV file", type=["csv"])
+st.title("NARZY")
+st.subheader("AI-Powered Financial Risk and Fraud Analytics")
 
-if file is not None:
-    data = pd.read_csv(file)
-    st.write("Dataset preview")
-    st.dataframe(data.head())
+st.write(
+    "An early warning system designed to help analysts "
+    "identify companies that may be at risk of financial distress."
+)
 
-    target = st.selectbox(
-        "Select the distress target column",
-        data.columns
-    )
+st.divider()
 
-    if st.button("Train Risk Model"):
-        features = data.select_dtypes(include="number").drop(
-            columns=[target], errors="ignore"
-        )
-        usable = pd.concat([features, data[target]], axis=1).dropna()
+st.header("Company Financial Data")
 
-        if features.empty or usable[target].nunique() != 2:
-            st.error("Choose a dataset with numeric features and a binary target.")
-        else:
-            X = usable[features.columns]
-            y = usable[target]
+st.write(
+    "Upload a CSV file containing company financial information "
+    "to begin exploring the data."
+)
 
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.25, random_state=42,
-                stratify=y
-            )
+uploaded_file = st.file_uploader(
+    "Upload financial data (CSV)",
+    type=["csv"]
+)
 
-            model = RandomForestClassifier(
-                n_estimators=100,
-                class_weight="balanced",
-                random_state=42
-            )
-            model.fit(X_train, y_train)
-            predictions = model.predict(X_test)
+if uploaded_file is not None:
+    try:
+        df = pd.read_csv(uploaded_file)
 
-            st.metric(
-                "Accuracy",
-                f"{accuracy_score(y_test, predictions):.2%}"
-            )
-            st.metric(
-                "Recall",
-                f"{recall_score(y_test, predictions, zero_division=0):.2%}"
-            )
+        st.success("File uploaded successfully!")
 
-            st.subheader("Feature Importance")
-            importance = pd.Series(
-                model.feature_importances_,
-                index=X.columns
-            ).sort_values(ascending=False)
-            st.bar_chart(importance)
+        st.subheader("Data Preview")
+        st.dataframe(df, use_container_width=True)
 
-            st.success("Prototype model training completed.")
-else:
-    st.info("Upload a suitable CSV dataset to begin.")
+        st.subheader("Dataset Summary")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric("Total Rows", len(df))
+
+        with col2:
+            st.metric("Total Columns", len(df.columns))
+
+    except Exception as e:
+        st.error(f"Could not read the CSV file: {e}")
+
+st.divider()
+
+st.caption(
+    "NARZY is a prototype. Uploaded data is displayed for exploration; "
+    "this version does not yet predict bankruptcy or prove fraud."
+)
+
+
+
 
