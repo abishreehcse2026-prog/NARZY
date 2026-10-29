@@ -122,6 +122,10 @@ if uploaded_file is not None:
                 c4.metric(
                     "F1-score",
                     f"{f1_score(y_test, predictions, zero_division=0):.3f}"
+                    
+                    c5, = st.columns(1)
+                    c5.metric("ROC-AUC", f"{auc:.3f}")
+
                 )
 
                 st.write("Label distribution (0 = non-bankrupt, 1 = bankrupt):")
