@@ -160,7 +160,7 @@ if uploaded_file is not None:
                   )
 
                 selected_index = int(selected_record)
-                  selected_features = X.loc[selected_index]
+                selected_features = X.loc[selected_index]
 
                 feature_importance = pd.Series(
                       model.named_steps["forest"].feature_importances_,
