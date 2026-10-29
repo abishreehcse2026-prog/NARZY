@@ -158,13 +158,13 @@ if uploaded_file is not None:
                   )
                 st.subheader("Risk Alert Summary")
 
-high_risk = (risk_scores >= 0.5).sum()
-lower_risk = (risk_scores < 0.5).sum()
+                high_risk = (risk_scores >= 0.5).sum()
+                nlower_risk = (risk_scores < 0.5).sum()
 
-col1, col2 = st.columns(2)
+                col1, col2 = st.columns(2)
 
-col1.metric("High-Risk Records", int(high_risk))
-col2.metric("Lower-Risk Records", int(lower_risk))
+               col1.metric("High-Risk Records", int(high_risk))
+               col2.metric("Lower-Risk Records", int(lower_risk))
 
                 risk_table.insert(
                       0,
