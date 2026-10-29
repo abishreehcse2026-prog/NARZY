@@ -201,6 +201,14 @@ if uploaded_file is not None:
                       use_container_width=True,
                       hide_index=True
                   )
+                
+                st.download_button(
+                      label="Download Risk Report (CSV)",
+                      data=risk_table.to_csv(index=False),
+                      file_name="NARZY_Risk_Report.csv",
+                      mime="text/csv"
+                  )
+
 
                 st.subheader("Risk Alert Summary")
                 high_risk = int((risk_scores >= threshold).sum())
