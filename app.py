@@ -137,6 +137,44 @@ if uploaded_file is not None:
                 ).sort_values(ascending=False).head(10)
 
                 st.bar_chart(importances)
+                
+                  st.subheader("Company Risk Ranking")
+
+                  risk_scores = model.predict_proba(X_test)[:, 1]
+
+                  risk_table = pd.DataFrame({
+                      "Record ID": X_test.index.astype(str),
+                      "Bankruptcy Risk (%)": (risk_scores * 100).round(2),
+                      "Risk Status": np.where(
+                          risk_scores >= 0.5,
+                          "High Risk",
+                          "Lower Risk"
+                      )
+                  })
+
+                  risk_table = risk_table.sort_values(
+                      by="Bankruptcy Risk (%)",
+                      ascending=False
+                  )
+
+                  risk_table.insert(
+                      0,
+                      "Rank",
+                      range(1, len(risk_table) + 1)
+                  )
+
+                  st.write(
+                      "Records ranked by predicted bankruptcy risk. "
+                      "These are holdout test records, not verified "
+                      "company-level predictions."
+                  )
+
+                  st.dataframe(
+                      risk_table,
+                      use_container_width=True,
+                      hide_index=True
+                  )
+
 
                 st.warning(
                     "This baseline uses financial records, not identified "
