@@ -152,24 +152,24 @@ if uploaded_file is not None:
                       )
                   })
 
-                  risk_table = risk_table.sort_values(
+                risk_table = risk_table.sort_values(
                       by="Bankruptcy Risk (%)",
                       ascending=False
                   )
 
-                  risk_table.insert(
+                risk_table.insert(
                       0,
                       "Rank",
                       range(1, len(risk_table) + 1)
                   )
 
-                  st.write(
+                st.write(
                       "Records ranked by predicted bankruptcy risk. "
                       "These are holdout test records, not verified "
                       "company-level predictions."
                   )
 
-                  st.dataframe(
+                st.dataframe(
                       risk_table,
                       use_container_width=True,
                       hide_index=True
