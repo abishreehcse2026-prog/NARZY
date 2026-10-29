@@ -94,6 +94,11 @@ if uploaded_file is not None:
                 with st.spinner("Training model..."):
                     model.fit(X_train, y_train)
                     predictions = model.predict(X_test)
+                    
+                    probabilities = model.predict_proba(X_test)[:, 1]
+
+                    auc = roc_auc_score(y_test, probabilities)
+
 
                 st.subheader("Model Evaluation")
                 st.caption(
