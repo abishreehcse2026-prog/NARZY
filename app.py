@@ -164,6 +164,52 @@ if uploaded_file is not None:
                 st.subheader("Company Risk Ranking")
 
                 risk_scores = model.predict_proba(X_test)[:, 1]
+                
+                st.subheader("Risk Alert Threshold")
+
+                threshold = st.slider(
+                      "Choose the alert threshold",
+                      min_value=0.10,
+                      max_value=0.90,
+                      value=0.50,
+                      step=0.05
+                  )
+
+                risk_scores = model.predict_proba(X_test)[:, 1]
+                risk_labels = np.where(
+                      risk_scores >= threshold,
+                      "High Risk",
+                      "Lower Risk"
+                  )
+
+                risk_table = pd.DataFrame({
+                      "Record ID": X_test.index.astype(str),
+                      "Bankruptcy Risk (%)": (risk_scores * 100).round(2),
+                      "Risk Status": risk_labels
+                  })
+
+                risk_table = risk_table.sort_values(
+                      by="Bankruptcy Risk (%)",
+                      ascending=False
+                  )
+
+                risk_table.insert(0, "Rank", range(1, len(risk_table) + 1))
+
+                st.subheader("Company Risk Ranking")
+                st.dataframe(
+                      risk_table,
+                      use_container_width=True,
+                      hide_index=True
+                  )
+
+                st.subheader("Risk Alert Summary")
+                high_risk = int((risk_scores >= threshold).sum())
+                lower_risk = int((risk_scores < threshold).sum())
+
+                col1, col2 = st.columns(2)
+                col1.metric("High-Risk Records", high_risk)
+                col2.metric("Lower-Risk Records", lower_risk)
+
 
                 risk_table = pd.DataFrame({
                       "Record ID": X_test.index.astype(str),
