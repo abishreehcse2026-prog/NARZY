@@ -1,63 +1,154 @@
 
 import streamlit as st
 import pandas as pd
+import numpy as np
+
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix
+)
 
 st.set_page_config(
-    page_title="NARZY | Financial Risk Analytics",
+    page_title="NARZY | Risk Analytics",
     page_icon="📊",
     layout="wide"
 )
 
 st.title("NARZY")
 st.subheader("AI-Powered Financial Risk and Fraud Analytics")
-
-st.write(
-    "An early warning system designed to help analysts "
-    "identify companies that may be at risk of financial distress."
-)
-
-st.divider()
-
-st.header("Company Financial Data")
-
-st.write(
-    "Upload a CSV file containing company financial information "
-    "to begin exploring the data."
-)
+st.write("An early-warning prototype for corporate financial distress.")
 
 uploaded_file = st.file_uploader(
-    "Upload financial data (CSV)",
+    "Upload bankruptcy dataset (CSV)",
     type=["csv"]
 )
 
 if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file)
+        st.success("Dataset uploaded successfully!")
 
-        st.success("File uploaded successfully!")
+        st.subheader("Dataset Preview")
+        st.dataframe(df.head(10), use_container_width=True)
 
-        st.subheader("Data Preview")
-        st.dataframe(df, use_container_width=True)
+        st.write(f"Rows: {len(df)} | Columns: {len(df.columns)}")
 
-        st.subheader("Dataset Summary")
+        target_options = list(df.columns)
+        default_target = (
+            target_options.index("class")
+            if "class" in target_options
+            else len(target_options) - 1
+        )
 
-        col1, col2 = st.columns(2)
+        target = st.selectbox(
+            "Select the bankruptcy label column",
+            target_options,
+            index=default_target
+        )
 
-        with col1:
-            st.metric("Total Rows", len(df))
+        if st.button("Train Risk Model"):
+            data = df.copy()
+            data[target] = pd.to_numeric(data[target], errors="coerce")
+            data = data.dropna(subset=[target])
 
-        with col2:
-            st.metric("Total Columns", len(df.columns))
+            X = data.drop(columns=[target])
+            X = X.apply(pd.to_numeric, errors="coerce")
+            X = X.replace([np.inf, -np.inf], np.nan)
+
+            valid = data[target].isin([0, 1])
+            X = X.loc[valid]
+            y = data.loc[valid, target].astype(int)
+
+            if y.nunique() != 2 or y.value_counts().min() < 2:
+                st.error(
+                    "The selected label must contain both 0 and 1, "
+                    "with at least two examples of each."
+                )
+            else:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y,
+                    test_size=0.2,
+                    random_state=42,
+                    stratify=y
+                )
+
+                model = Pipeline([
+                    ("imputer", SimpleImputer(strategy="median")),
+                    ("forest", RandomForestClassifier(
+                        n_estimators=200,
+                        class_weight="balanced",
+                        random_state=42,
+                        n_jobs=-1
+                    ))
+                ])
+
+                with st.spinner("Training model..."):
+                    model.fit(X_train, y_train)
+                    predictions = model.predict(X_test)
+
+                st.subheader("Model Evaluation")
+                st.caption(
+                    "Results are from a stratified random holdout. "
+                    "This is an initial baseline, not time-aware validation."
+                )
+
+                c1, c2, c3, c4 = st.columns(4)
+                c1.metric(
+                    "Accuracy",
+                    f"{accuracy_score(y_test, predictions):.3f}"
+                )
+                c2.metric(
+                    "Precision",
+                    f"{precision_score(y_test, predictions, zero_division=0):.3f}"
+                )
+                c3.metric(
+                    "Recall",
+                    f"{recall_score(y_test, predictions, zero_division=0):.3f}"
+                )
+                c4.metric(
+                    "F1-score",
+                    f"{f1_score(y_test, predictions, zero_division=0):.3f}"
+                )
+
+                st.write("Label distribution (0 = non-bankrupt, 1 = bankrupt):")
+                st.write(y.value_counts().sort_index())
+
+                st.subheader("Confusion Matrix")
+                cm = confusion_matrix(y_test, predictions, labels=[0, 1])
+                st.dataframe(
+                    pd.DataFrame(
+                        cm,
+                        index=["Actual 0", "Actual 1"],
+                        columns=["Predicted 0", "Predicted 1"]
+                    )
+                )
+
+                st.subheader("Most Important Features")
+                importances = pd.Series(
+                    model.named_steps["forest"].feature_importances_,
+                    index=X.columns
+                ).sort_values(ascending=False).head(10)
+
+                st.bar_chart(importances)
+
+                st.warning(
+                    "This baseline uses financial records, not identified "
+                    "company names. Predictions are research signals, "
+                    "not proof of fraud or certain default."
+                )
 
     except Exception as e:
-        st.error(f"Could not read the CSV file: {e}")
+        st.error(f"Could not process this dataset: {e}")
 
 st.divider()
-
-st.caption(
-    "NARZY is a prototype. Uploaded data is displayed for exploration; "
-    "this version does not yet predict bankruptcy or prove fraud."
-)
+st.caption("NARZY | Financial risk screening prototype")
 
 
 
