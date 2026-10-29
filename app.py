@@ -138,7 +138,7 @@ if uploaded_file is not None:
 
                 st.bar_chart(importances)
                 
-                  st.subheader("Company Risk Ranking")
+                st.subheader("Company Risk Ranking")
 
                   risk_scores = model.predict_proba(X_test)[:, 1]
 
