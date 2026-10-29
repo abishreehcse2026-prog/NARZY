@@ -131,6 +131,29 @@ if uploaded_file is not None:
                 )
 
                 st.subheader("Most Important Features")
+                
+                st.subheader("Missed Bankruptcy Cases")
+
+                false_negatives = int(cm[1, 0])
+                true_positives = int(cm[1, 1])
+
+                st.metric(
+                      "Bankrupt Records Missed",
+                      false_negatives
+                  )
+
+                st.write(
+                      f"The model correctly identified {true_positives} "
+                      f"bankrupt records but missed {false_negatives} "
+                      "bankrupt records in this test set."
+                  )
+
+                st.info(
+                      "In financial risk screening, missed bankruptcies "
+                      "can be costly. The alert threshold should be "
+                      "evaluated and validated before real-world use."
+                  )
+
                 importances = pd.Series(
                     model.named_steps["forest"].feature_importances_,
                     index=X.columns
