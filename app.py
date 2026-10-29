@@ -13,6 +13,8 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     confusion_matrix
+    roc_auc_score
+
 )
 
 st.set_page_config(
